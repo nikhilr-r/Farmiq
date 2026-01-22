@@ -1,8 +1,7 @@
-import { useContext } from 'react';
-import UserContext from '../context/UserContext';
+import { useUser } from '../context/UserContext';
 
 const Header = () => {
-    const { preferences, updatePreference } = useContext(UserContext);
+    const { userProfile, updateUserProfile } = useUser();
 
     return (
         <header className="bg-green-700 text-white shadow-md">
@@ -18,8 +17,8 @@ const Header = () => {
                 <div>
                     <select
                         className="bg-green-800 text-white text-sm rounded border border-green-600 px-2 py-1 focus:outline-none"
-                        value={preferences.language}
-                        onChange={(e) => updatePreference('language', e.target.value)}
+                        value={userProfile.language || 'mr'}
+                        onChange={(e) => updateUserProfile({ language: e.target.value })}
                     >
                         <option value="mr">मराठी</option>
                         <option value="en">English</option>

@@ -1,10 +1,9 @@
-import { useContext } from 'react';
+import { useUser } from '../context/UserContext';
 import { Link } from 'react-router-dom';
-import UserContext from '../context/UserContext';
 import { MAHARASHTRA_DISTRICTS } from '../constants';
 
 const Home = () => {
-    const { preferences, updatePreference } = useContext(UserContext);
+    const { userProfile, updateUserProfile } = useUser();
 
     const districts = MAHARASHTRA_DISTRICTS;
 
@@ -12,15 +11,15 @@ const Home = () => {
         <div className="flex flex-col min-h-screen">
             {/* Hero / Context Section */}
             <section className="bg-green-600 text-white px-4 py-8 rounded-b-3xl shadow-lg">
-                <h2 className="text-2xl font-bold mb-2">नमस्कार, शेतकरी मित्र! 🙏</h2>
+                <h2 className="text-2xl font-bold mb-2">नमस्कार, {userProfile.name || 'शेतकरी मित्र'}! 🙏</h2>
                 <p className="text-green-100 mb-6">Select your district to see relevant info.</p>
 
                 <div className="bg-white rounded-lg p-3 text-gray-800 shadow-md">
                     <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Your District (जिल्हा)</label>
                     <select
                         className="w-full text-lg font-semibold bg-transparent focus:outline-none"
-                        value={preferences.district}
-                        onChange={(e) => updatePreference('district', e.target.value)}
+                        value={userProfile.district}
+                        onChange={(e) => updateUserProfile({ district: e.target.value })}
                     >
                         <option value="">Select District</option>
                         {districts.map(d => (

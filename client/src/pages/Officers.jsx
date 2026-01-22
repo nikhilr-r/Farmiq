@@ -1,14 +1,14 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
-import UserContext from '../context/UserContext';
+import { useUser } from '../context/UserContext';
 import { MAHARASHTRA_DISTRICTS, DISTRICT_TALUKAS } from '../constants';
 
 const Officers = () => {
-    const { preferences } = useContext(UserContext);
+    const { userProfile } = useUser();
     const [officers, setOfficers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [filters, setFilters] = useState({
-        district: preferences.district || '',
+        district: userProfile.district || '',
         taluka: ''
     });
 
@@ -20,7 +20,7 @@ const Officers = () => {
             setAvailableTalukas(DISTRICT_TALUKAS[filters.district] || []);
             // Only reset taluka if the current taluka doesn't belong to the new district
             // But usually safer to reset to avoid mismatches
-            if (filters.district !== preferences.district) {
+            if (filters.district !== userProfile.district) {
                 // If context district matches, maybe keep it?
                 // For simplicity, let's keep it empty or default when switching district manually
             }

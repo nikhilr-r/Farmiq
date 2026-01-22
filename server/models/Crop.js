@@ -21,7 +21,11 @@ const cropSchema = new mongoose.Schema({
     tasks: [{
         stage: { type: String }, // e.g., "Sowing", "Vegetative", "Flowering"
         description: { type: String },
-        advisory: { type: String } // Practical advice, NO BRANDS
+        advisory: { type: String }, // Practical advice, NO BRANDS
+        daysAfterSowing: { // NEW: For Calendar Logic
+            start: { type: Number },
+            end: { type: Number }
+        }
     }],
     diseases: [{
         name: { type: String },

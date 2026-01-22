@@ -1,34 +1,43 @@
-import { createContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const UserContext = createContext();
 
+export const useUser = () => useContext(UserContext);
+
 export const UserProvider = ({ children }) => {
-    const [preferences, setPreferences] = useState({
-        language: 'mr', // Default Marathi
-        district: '',
-        taluka: ''
+    const [myCrops, setMyCrops] = useState(() => {
+        const saved = localStorage.getItem('myCrops');
+        return saved ? JSON.parse(saved) : [];
+    });
+    const [userProfile, setUserProfile] = useState(() => {
+        const saved = localStorage.getItem('userProfile');
+        return saved ? JSON.parse(saved) : { name: "", district: "" };
     });
 
-    // Load from local storage on mount
     useEffect(() => {
-        const stored = localStorage.getItem('farmiq_pref');
-        if (stored) setPreferences(JSON.parse(stored));
-    }, []);
+        localStorage.setItem('myCrops', JSON.stringify(myCrops));
+    }, [myCrops]);
 
-    // Save to local storage on change
     useEffect(() => {
-        localStorage.setItem('farmiq_pref', JSON.stringify(preferences));
-    }, [preferences]);
+        localStorage.setItem('userProfile', JSON.stringify(userProfile));
+    }, [userProfile]);
 
-    const updatePreference = (key, value) => {
-        setPreferences(prev => ({ ...prev, [key]: value }));
+    const addCrop = (cropData) => {
+        // cropData should include: { id: uuid, cropId: string, name: string, sowingDate: string, district: string }
+        setMyCrops(prev => [...prev, cropData]);
+    };
+
+    const removeCrop = (id) => {
+        setMyCrops(prev => prev.filter(crop => crop.id !== id));
+    };
+
+    const updateUserProfile = (data) => {
+        setUserProfile(prev => ({ ...prev, ...data }));
     };
 
     return (
-        <UserContext.Provider value={{ preferences, updatePreference }}>
+        <UserContext.Provider value={{ myCrops, addCrop, removeCrop, userProfile, updateUserProfile }}>
             {children}
         </UserContext.Provider>
     );
 };
-
-export default UserContext;
