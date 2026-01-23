@@ -22,6 +22,7 @@ app.use('/api/v1/schemes', require('./routes/schemes'));
 app.use('/api/v1/crops', require('./routes/crops'));
 app.use('/api/v1/officers', require('./routes/officers'));
 app.use('/api/v1/updates', require('./routes/updates'));
+app.use('/api/v1/weather', require('./routes/weatherRoutes'));
 
 app.use('/api/v1/auth', require('./routes/auth'));
 app.use('/api/v1/admin', require('./routes/admin'));

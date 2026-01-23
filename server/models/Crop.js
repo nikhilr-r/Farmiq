@@ -22,7 +22,7 @@ const cropSchema = new mongoose.Schema({
         stage: { type: String }, // e.g., "Sowing", "Vegetative", "Flowering"
         description: { type: String },
         advisory: { type: String }, // Practical advice, NO BRANDS
-        daysAfterSowing: { // NEW: For Calendar Logic
+        daysAfterSowing: { // NEW: For timeline tracking
             start: { type: Number },
             end: { type: Number }
         }

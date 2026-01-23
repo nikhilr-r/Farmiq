@@ -1,280 +1,190 @@
 import React, { useState, useEffect } from 'react';
-import { useUser } from '../context/UserContext';
 import axios from 'axios';
-import { v4 as uuidv4 } from 'uuid';
 
 const Calendar = () => {
-    const { myCrops, addCrop, removeCrop } = useUser();
-    const [availableCrops, setAvailableCrops] = useState([]);
-    const [isAdding, setIsAdding] = useState(false);
-    // Which crop's timeline is currently being viewed? Default to the first one.
-    const [activeTabCropId, setActiveTabCropId] = useState(null);
-    const [expandedStageIndex, setExpandedStageIndex] = useState(null);
+    const [crops, setCrops] = useState([]);
+    const [selectedCrop, setSelectedCrop] = useState(null);
+    const [sowingDate, setSowingDate] = useState(() => {
+        return localStorage.getItem('sowingDate') || new Date().toISOString().split('T')[0];
+    });
+    const [elapsedDays, setElapsedDays] = useState(0);
 
-    // Form State
-    const [selectedCropId, setSelectedCropId] = useState('');
-    const [sowingDate, setSowingDate] = useState('');
-
+    // Fetch crops on mount
     useEffect(() => {
         const fetchCrops = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/v1/crops');
-                setAvailableCrops(res.data);
-            } catch (err) {
-                console.error("Failed to load crops", err);
+                const response = await axios.get('http://localhost:5000/api/v1/crops');
+                setCrops(response.data);
+                if (response.data.length > 0) {
+                    // Try to restore selection or pick first
+                    const savedCropId = localStorage.getItem('selectedCropId');
+                    const initialCrop = response.data.find(c => c._id === savedCropId) || response.data[0];
+                    setSelectedCrop(initialCrop);
+                }
+            } catch (error) {
+                console.error("Error fetching crops:", error);
             }
         };
         fetchCrops();
     }, []);
 
-    // Set default active tab
+    // Calculate days elapsed whenever date or crop changes
     useEffect(() => {
-        console.log("MyCrops:", myCrops, "ActiveTab:", activeTabCropId);
-        if (myCrops.length > 0) {
-            // If nothing active, or active ID no longer exists in myCrops (deleted)
-            if (!activeTabCropId || !myCrops.find(c => c.id === activeTabCropId)) {
-                console.log("Setting active tab to:", myCrops[0].id);
-                setActiveTabCropId(myCrops[0].id);
-            }
-        } else {
-            setActiveTabCropId(null);
+        if (sowingDate) {
+            const start = new Date(sowingDate);
+            const now = new Date();
+            // Calculate difference in milliseconds
+            const diffTime = now - start;
+            // Convert to days
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+            setElapsedDays(diffDays < 0 ? 0 : diffDays);
+
+            localStorage.setItem('sowingDate', sowingDate);
         }
-    }, [myCrops, activeTabCropId]);
+    }, [sowingDate]);
 
-    const handleAddCrop = (e) => {
-        e.preventDefault();
-        if (!selectedCropId || !sowingDate) return;
+    useEffect(() => {
+        if (selectedCrop) {
+            localStorage.setItem('selectedCropId', selectedCrop._id);
+        }
+    }, [selectedCrop]);
 
-        const cropDetails = availableCrops.find(c => c._id === selectedCropId);
+    // Helper to determine status
+    const getStageStatus = (task) => {
+        if (!task.daysAfterSowing) return 'PENDING'; // Default if no data
+        const { start, end } = task.daysAfterSowing;
 
-        const newId = uuidv4();
-        addCrop({
-            id: newId,
-            cropId: selectedCropId,
-            name: cropDetails.name,
-            sowingDate: sowingDate
-        });
-
-        setIsAdding(false);
-        setActiveTabCropId(newId); // Switch to new crop
-        setSelectedCropId('');
-        setSowingDate('');
+        if (elapsedDays > end) return 'COMPLETED';
+        if (elapsedDays >= start && elapsedDays <= end) return 'CURRENT';
+        return 'PENDING';
     };
 
-    // --- TIMELINE LOGIC ---
-    const getTimelineData = (userCrop) => {
-        const cropData = availableCrops.find(c => c._id === userCrop.cropId);
-        if (!cropData) return [];
-
-        const sownDate = new Date(userCrop.sowingDate);
-        const today = new Date();
-        const diffTime = today - sownDate;
-        const daysElapsed = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-        // Sort tasks by start day
-        const sortedTasks = [...cropData.tasks].sort((a, b) =>
-            (a.daysAfterSowing?.start || 0) - (b.daysAfterSowing?.start || 0)
-        );
-
-        return sortedTasks.map((task, index) => {
-            const start = task.daysAfterSowing?.start ?? -999;
-            const end = task.daysAfterSowing?.end ?? -999;
-
-            let status = 'upcoming'; // pending
-            if (daysElapsed > end) status = 'completed';
-            else if (daysElapsed >= start && daysElapsed <= end) status = 'current';
-
-            return {
-                ...task,
-                status,
-                isExpanded: index === expandedStageIndex || status === 'current' // Auto-expand current
-            };
-        });
+    const handleCropChange = (e) => {
+        const crop = crops.find(c => c._id === e.target.value);
+        setSelectedCrop(crop);
     };
 
-    const activeUserCrop = myCrops.find(c => c.id === activeTabCropId);
-    const timelineEvents = activeUserCrop ? getTimelineData(activeUserCrop) : [];
+    if (!selectedCrop) return <div className="p-4 text-center">Loading Crops...</div>;
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-20">
+        <div className="container mx-auto p-4 min-h-screen bg-gray-50">
             {/* Header */}
-            <div className="bg-green-700 text-white p-4 shadow-md sticky top-0 z-20">
-                <div className="flex justify-between items-center">
-                    <div>
-                        <h1 className="text-xl font-bold">🌾 पीक सल्ला (Crop Advisory)</h1>
-                        <p className="text-xs text-green-100">See what to do at every stage.</p>
-                    </div>
-                    <button
-                        onClick={() => setIsAdding(!isAdding)}
-                        className="bg-white text-green-800 px-3 py-1.5 rounded-full text-sm font-bold shadow hover:bg-green-50 transition"
+            <div className="bg-green-600 p-4 rounded-t-xl shadow-md text-white flex items-center justify-between mb-4">
+                <h1 className="text-xl font-bold">पीक सल्ला (Crop Advisory)</h1>
+            </div>
+
+            {/* Inputs */}
+            <div className="bg-white p-4 rounded-xl shadow-sm mb-6 flex flex-col md:flex-row gap-4 items-center">
+                <div className="flex-1 w-full">
+                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">पेरणीची तारीख (Sowing Date)</label>
+                    <input
+                        type="date"
+                        value={sowingDate}
+                        onChange={(e) => setSowingDate(e.target.value)}
+                        className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500 p-2 border"
+                    />
+                </div>
+                <div className="flex-1 w-full">
+                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">पीक निवडा (Select Crop)</label>
+                    <select
+                        value={selectedCrop._id}
+                        onChange={handleCropChange}
+                        className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500 p-2 border"
                     >
-                        {isAdding ? 'Cancel' : '+ Add Crop'}
-                    </button>
+                        {crops.map(crop => (
+                            <option key={crop._id} value={crop._id}>
+                                {crop.name.mr} ({crop.name.en})
+                            </option>
+                        ))}
+                    </select>
                 </div>
             </div>
 
-            {/* Add Crop Form */}
-            {isAdding && (
-                <div className="m-4 bg-white p-4 rounded-xl shadow-lg border-2 border-green-100 animate-slideDown z-30 relative">
-                    <h3 className="font-bold text-gray-700 mb-3">Add New Crop</h3>
-                    <form onSubmit={handleAddCrop} className="space-y-3">
-                        <div>
-                            <label className="block text-xs font-bold text-gray-500 mb-1">Select Crop</label>
-                            <select
-                                className="w-full p-2 border rounded-lg bg-gray-50"
-                                value={selectedCropId}
-                                onChange={(e) => setSelectedCropId(e.target.value)}
-                                required
-                            >
-                                <option value="">Choose Crop...</option>
-                                {availableCrops.map(c => (
-                                    <option key={c._id} value={c._id}>{c.name.mr} ({c.name.en})</option>
-                                ))}
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-xs font-bold text-gray-500 mb-1">Sowing Date (पेरणी तारीख)</label>
-                            <input
-                                type="date"
-                                className="w-full p-2 border rounded-lg bg-gray-50"
-                                value={sowingDate}
-                                onChange={(e) => setSowingDate(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <button type="submit" className="w-full bg-green-600 text-white py-2 rounded-lg font-bold shadow">
-                            Save Crop
-                        </button>
-                    </form>
+            {/* Status Legend */}
+            <div className="flex c gap-4 text-xs mb-6 overflow-x-auto text-gray-600 px-2">
+                <div className="flex items-center gap-1 whitespace-nowrap">
+                    <div className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center text-white text-[10px]">✓</div>
+                    <span>पूर्ण झालेला टप्पा</span>
                 </div>
-            )}
-
-            {/* Crop Tabs */}
-            {myCrops.length > 0 && (
-                <div className="bg-white shadow-sm border-b border-gray-200 sticky top-16 z-10 overflow-x-auto no-scrollbar">
-                    <div className="flex p-2 space-x-2">
-                        {myCrops.map(crop => (
-                            <button
-                                key={crop.id}
-                                onClick={() => setActiveTabCropId(crop.id)}
-                                className={`px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-colors flex items-center gap-2 ${activeTabCropId === crop.id
-                                    ? 'bg-green-100 text-green-800 border border-green-200'
-                                    : 'bg-gray-50 text-gray-500 border border-transparent'
-                                    }`}
-                            >
-                                <span>{crop.name.mr}</span>
-                                {activeTabCropId === crop.id && (
-                                    <span
-                                        onClick={(e) => { e.stopPropagation(); removeCrop(crop.id); if (activeTabCropId === crop.id) setActiveTabCropId(null); }}
-                                        className="text-red-400 hover:text-red-600 ml-1 text-base font-black px-1"
-                                    >
-                                        ×
-                                    </span>
-                                )}
-                            </button>
-                        ))}
-                    </div>
+                <div className="flex items-center gap-1 whitespace-nowrap">
+                    <div className="w-4 h-4 rounded-full bg-orange-500 border-2 border-white shadow-sm"></div>
+                    <span>सध्याचा टप्पा</span>
                 </div>
-            )}
+                <div className="flex items-center gap-1 whitespace-nowrap">
+                    <div className="w-4 h-4 rounded-full bg-gray-300"></div>
+                    <span>प्रलंबित टप्पा</span>
+                </div>
+                <div className="ml-auto font-bold text-green-700">
+                    दिवस: {elapsedDays}
+                </div>
+            </div>
 
-            {/* TIMELINE CONTENT */}
-            <div className="p-4 container mx-auto max-w-lg">
-                {!activeUserCrop ? (
-                    !isAdding && (
-                        <div className="text-center py-12">
-                            <div className="bg-green-50 inline-block p-4 rounded-full mb-4">
-                                <span className="text-4xl">🌱</span>
-                            </div>
-                            <h3 className="text-lg font-bold text-gray-700">No Crops Added</h3>
-                            <p className="text-gray-500 mb-4">Add your crop to see the advisory timeline.</p>
-                            <button onClick={() => setIsAdding(true)} className="text-green-600 font-bold underline">
-                                + Add Your First Crop
-                            </button>
-                        </div>
-                    )
-                ) : (
-                    <div>
-                        {/* Info Card */}
-                        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex justify-between items-center">
-                            <div>
-                                <p className="text-xs text-gray-500 uppercase font-bold">Sowing Date</p>
-                                <p className="text-lg font-bold text-gray-800">
-                                    {new Date(activeUserCrop.sowingDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
-                                </p>
-                            </div>
-                            <div className="text-right">
-                                <p className="text-xs text-gray-500 uppercase font-bold">Crop Age</p>
-                                <p className="text-lg font-bold text-green-600">
-                                    {Math.floor((new Date() - new Date(activeUserCrop.sowingDate)) / (1000 * 60 * 60 * 24))} Days
-                                </p>
-                            </div>
-                        </div>
+            {/* Timeline */}
+            <div className="relative pl-4">
+                {/* Vertical Line */}
+                <div className="absolute left-[22px] top-0 bottom-0 w-0.5 bg-gray-200 -z-10"></div>
 
-                        {/* Timeline */}
-                        <div className="relative border-l-2 border-gray-300 ml-4 space-y-8 pl-8 py-2">
-                            {timelineEvents.map((stage, idx) => (
-                                <div key={idx} className="relative">
-                                    {/* Icon Indicator */}
-                                    <div className={`absolute -left-[41px] top-0 w-6 h-6 rounded-full border-2 flex items-center justify-center z-10 ${stage.status === 'completed' ? 'bg-green-500 border-green-500' :
-                                        stage.status === 'current' ? 'bg-white border-orange-500 scale-125' :
-                                            'bg-gray-100 border-gray-300'
-                                        }`}>
-                                        {stage.status === 'completed' && <span className="text-white text-xs font-bold">✓</span>}
-                                        {stage.status === 'current' && <div className="w-2.5 h-2.5 bg-orange-500 rounded-full animate-pulse"></div>}
-                                    </div>
+                <div className="space-y-6">
+                    {selectedCrop.tasks && selectedCrop.tasks.map((task, idx) => {
+                        const status = getStageStatus(task);
+                        const isExpanded = status === 'CURRENT'; // Auto-expand current
 
-                                    {/* Content Card */}
-                                    <div className={`transition-all duration-300 ${stage.status === 'current' ? 'opacity-100' :
-                                        stage.status === 'completed' ? 'opacity-80' : 'opacity-60 grayscale'
-                                        }`}>
-                                        <div
-                                            onClick={() => setExpandedStageIndex(expandedStageIndex === idx ? null : idx)}
-                                            className={`bg-white rounded-lg shadow-sm border cursor-pointer p-4 hover:shadow-md transition-shadow ${stage.status === 'current' ? 'border-orange-400 ring-1 ring-orange-100' : 'border-gray-100'
-                                                }`}
-                                        >
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <h3 className={`font-bold text-lg ${stage.status === 'current' ? 'text-orange-700' :
-                                                        stage.status === 'completed' ? 'text-green-700' : 'text-gray-600'
-                                                        }`}>
-                                                        {stage.stage}
-                                                    </h3>
-                                                    {stage.daysAfterSowing && (
-                                                        <p className="text-xs text-gray-400 font-mono mt-0.5">
-                                                            Day {stage.daysAfterSowing.start} - {stage.daysAfterSowing.end}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                                <button className="text-blue-500 text-xs font-bold bg-blue-50 px-2 py-1 rounded">
-                                                    {expandedStageIndex === idx || stage.status === 'current' ? 'Hide Info' : 'More Info'}
-                                                </button>
-                                            </div>
-
-                                            {/* Collapsible Content */}
-                                            {(expandedStageIndex === idx || stage.status === 'current') && (
-                                                <div className="mt-3 text-sm text-gray-600 border-t border-gray-100 pt-3">
-                                                    <p className="mb-2"><strong className="text-gray-800">Kruti (Action):</strong> {stage.description}</p>
-                                                    <p className="bg-yellow-50 p-2 rounded border border-yellow-100 text-yellow-800">
-                                                        💡 <strong>Tip:</strong> {stage.advisory}
-                                                    </p>
-                                                    {/* Placeholder for future images */}
-                                                    {/* <div className="mt-2 h-32 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-xs">Image Placeholder</div> */}
-                                                </div>
-                                            )}
+                        return (
+                            <div key={idx} className="relative flex gap-4">
+                                {/* Indicator */}
+                                <div className="mt-1 flex-shrink-0">
+                                    {status === 'COMPLETED' && (
+                                        <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-white shadow-sm border-2 border-white">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                            </svg>
                                         </div>
-                                    </div>
+                                    )}
+                                    {status === 'CURRENT' && (
+                                        <div className="w-6 h-6 rounded-full bg-orange-500 border-2 border-white shadow-md ring-2 ring-orange-200"></div>
+                                    )}
+                                    {status === 'PENDING' && (
+                                        <div className="w-6 h-6 rounded-full bg-gray-200 border-2 border-white"></div>
+                                    )}
                                 </div>
-                            ))}
-                        </div>
 
-                        {/* End of Timeline */}
-                        <div className="ml-4 pl-8 pt-2 pb-10">
-                            <div className="text-gray-400 text-sm italic">
-                                --- Harvest / End of Season ---
+                                {/* Content */}
+                                <div className={`flex-grow bg-white rounded-lg p-4 shadow-sm border ${status === 'CURRENT' ? 'border-orange-200 ring-1 ring-orange-100' : 'border-gray-100'}`}>
+                                    <div className="flex justify-between items-start">
+                                        <h3 className={`font-bold text-lg ${status === 'CURRENT' ? 'text-orange-700' : 'text-gray-800'}`}>
+                                            {task.stage}
+                                        </h3>
+                                        {task.daysAfterSowing && (
+                                            <span className="text-xs text-gray-400 font-mono">
+                                                Day {task.daysAfterSowing.start}-{task.daysAfterSowing.end}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    <div className="mt-2 text-gray-600 text-sm leading-relaxed">
+                                        {task.description}
+                                    </div>
+
+                                    {(isExpanded || status === 'CURRENT') && task.advisory && (
+                                        <div className="mt-3 bg-blue-50 p-3 rounded-md border border-blue-100">
+                                            <h4 className="text-xs font-bold text-blue-700 uppercase mb-1">💡 सल्ला (Advisory)</h4>
+                                            <p className="text-sm text-blue-800">
+                                                {task.advisory}
+                                            </p>
+                                        </div>
+                                    )}
+
+
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                )}
+                        );
+                    })}
+                </div>
+            </div>
+
+            <div className="mt-12 text-center text-gray-400 text-xs">
+                * Based on standard agricultural practices. Consult local experts for specific advice.
             </div>
         </div>
     );

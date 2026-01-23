@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import { useUser } from '../context/UserContext';
+import UserContext from '../context/UserContext';
 
 // Removed Lucide imports to rely on standard emojis/CSS where possible for stability.
 
 
 const Schemes = () => {
-    const { userProfile } = useUser();
+    const { preferences } = useContext(UserContext);
     const [schemes, setSchemes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('STATE'); // STATE | CENTRAL
@@ -15,12 +15,12 @@ const Schemes = () => {
 
     useEffect(() => {
         fetchSchemes();
-    }, [userProfile.district]);
+    }, [preferences.district]);
 
     const fetchSchemes = async () => {
         try {
             const res = await axios.get('http://localhost:5000/api/v1/schemes', {
-                params: { district: userProfile.district }
+                params: { district: preferences.district }
             });
             setSchemes(res.data);
             setLoading(false);
