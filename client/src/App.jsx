@@ -20,7 +20,7 @@ function App() {
           {/* Conditional Header: Show only if NOT in admin routes (optional, but good practice) */}
           <Header />
 
-          <div className="flex-grow pb-16"> {/* Add padding bottom for BottomNav */}
+          <main className="flex-grow pb-24 md:pb-8 max-w-7xl mx-auto w-full">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/schemes" element={<Schemes />} />
@@ -30,10 +30,12 @@ function App() {
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
             </Routes>
-          </div>
+          </main>
 
-          {/* Mobile Bottom Nav (Visible on all screens for now) */}
-          <BottomNav />
+          {/* Mobile Bottom Nav (Visible only on mobile) */}
+          <div className="md:hidden">
+            <BottomNav />
+          </div>
         </div>
       </Router>
     </UserProvider>

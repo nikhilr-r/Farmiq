@@ -75,8 +75,8 @@ const WeatherCard = () => {
     // Success State - HERO STYLE
     if (weather) {
         return (
-            <div className="bg-gradient-to-r from-sky-300 to-sky-400 text-white 
-                w-full px-4 py-3 rounded-2xl shadow-md">
+            <div className="bg-gradient-to-r from-sky-300 to-sky-400 md:from-sky-400 md:to-sky-500 text-white 
+                w-full px-5 py-4 rounded-2xl shadow-lg md:shadow-md transition-all hover:shadow-lg">
 
                 {/* Date & Time */}
                 <p className="text-xs text-white/90 mb-1">
