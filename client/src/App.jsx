@@ -10,7 +10,12 @@ import Officers from './pages/Officers';
 import Calendar from './pages/Calendar';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
+import CropDoctor from './pages/CropDoctor';
 import './index.css';
+
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Profile from './pages/Profile';
 
 function App() {
   return (
@@ -23,12 +28,16 @@ function App() {
           <main className="flex-grow pb-24 md:pb-8 max-w-7xl mx-auto w-full">
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/profile" element={<Profile />} />
               <Route path="/schemes" element={<Schemes />} />
               <Route path="/crops" element={<Crops />} />
               <Route path="/officers" element={<Officers />} />
               <Route path="/calendar" element={<Calendar />} />
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/crop-doctor" element={<CropDoctor />} />
             </Routes>
           </main>
 

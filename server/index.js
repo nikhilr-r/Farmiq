@@ -26,6 +26,7 @@ app.use('/api/v1/weather', require('./routes/weatherRoutes'));
 
 app.use('/api/v1/auth', require('./routes/auth'));
 app.use('/api/v1/admin', require('./routes/admin'));
+app.use('/api/v1/farmer/auth', require('./routes/farmerAuth'));
 
 
 const PORT = process.env.PORT || 5000;
