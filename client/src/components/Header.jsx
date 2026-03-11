@@ -1,74 +1,118 @@
-import { useContext } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useContext, useState, useEffect } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import UserContext from '../context/UserContext';
-import { User, LogOut } from 'lucide-react';
+import useTranslation from '../i18n/useTranslation';
+import { User, LogOut, Home, Sprout, Microscope, CalendarDays, Landmark, PhoneCall, ChevronDown } from 'lucide-react';
 
 const Header = () => {
     const { preferences, updatePreference, isAuthenticated, farmer, logoutFarmer } = useContext(UserContext);
+    const { t } = useTranslation();
     const navigate = useNavigate();
+    const location = useLocation();
+    const [scrolled, setScrolled] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => setScrolled(window.scrollY > 10);
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     const handleLogout = () => {
         logoutFarmer();
         navigate('/login');
     };
 
+    const isActive = (path) => location.pathname === path;
+
+    const navLinks = [
+        { path: '/', key: 'header.home', icon: Home },
+        { path: '/crops', key: 'header.crops', icon: Sprout },
+        { path: '/crop-doctor', key: 'header.cropDoctor', icon: Microscope },
+        { path: '/calendar', key: 'header.calendar', icon: CalendarDays },
+        { path: '/schemes', key: 'header.schemes', icon: Landmark },
+        { path: '/officers', key: 'header.officers', icon: PhoneCall },
+    ];
+
     return (
-        <header className="bg-green-700 text-white shadow-md sticky top-0 z-50">
+        <header className={`sticky top-0 z-50 transition-all duration-300 ${
+            scrolled
+                ? 'bg-green-800/95 backdrop-blur-md shadow-lg'
+                : 'bg-green-700 shadow-md'
+        }`}>
             <div className="container mx-auto px-4 py-2 md:py-2.5 flex justify-between items-center max-w-7xl h-14 md:h-16">
                 <div className="flex items-center space-x-2 md:space-x-8 h-full">
-                    <div className="flex items-center space-x-2">
-                        {/* Logo Placeholder */}
-                        <div className="w-8 h-8 md:w-9 md:h-9 bg-white rounded-full flex items-center justify-center text-green-700 font-bold text-xl cursor-pointer shadow-sm">
+                    <Link to="/" className="flex items-center space-x-2 group">
+                        <div className="w-8 h-8 md:w-9 md:h-9 bg-gradient-to-br from-white to-green-100 rounded-xl flex items-center justify-center text-green-700 font-extrabold text-lg shadow-sm group-hover:scale-105 transition-transform">
                             F
                         </div>
-                        <h1 className="text-xl md:text-2xl font-bold tracking-wide hidden xs:block">Farmiq</h1>
-                    </div>
+                        <span className="text-lg md:text-xl font-bold tracking-tight text-white hidden xs:block">
+                            Farmiq
+                        </span>
+                    </Link>
 
-                    {/* Desktop Navigation */}
                     {isAuthenticated && (
-                        <nav className="hidden md:flex space-x-6 h-full items-center">
-                            <a href="/" className="hover:text-green-200 font-medium transition-colors text-sm lg:text-base">मुख्य पान</a>
-                            <a href="/crops" className="hover:text-green-200 font-medium transition-colors text-sm lg:text-base">पीक सल्ला</a>
-                            <a href="/crop-doctor" className="hover:text-green-200 font-medium transition-colors text-sm lg:text-base flex items-center gap-1">🔬 रोग निदान</a>
-                            <a href="/calendar" className="hover:text-green-200 font-medium transition-colors text-sm lg:text-base">दिनदर्शिका</a>
-                            <a href="/schemes" className="hover:text-green-200 font-medium transition-colors text-sm lg:text-base">योजना</a>
-                            <a href="/officers" className="hover:text-green-200 font-medium transition-colors text-sm lg:text-base">संपर्क</a>
+                        <nav className="hidden md:flex space-x-1 h-full items-center">
+                            {navLinks.map(({ path, key, icon: Icon }) => (
+                                <Link
+                                    key={path}
+                                    to={path}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                                        isActive(path)
+                                            ? 'bg-white/15 text-white shadow-sm'
+                                            : 'text-green-100 hover:bg-white/10 hover:text-white'
+                                    }`}
+                                >
+                                    <Icon className="w-4 h-4" strokeWidth={isActive(path) ? 2.5 : 2} />
+                                    <span>{t(key)}</span>
+                                </Link>
+                            ))}
                         </nav>
                     )}
                 </div>
 
                 <div className="flex items-center space-x-3 md:space-x-4">
-                    <select
-                        className="bg-green-800 text-white text-xs md:text-sm rounded-lg border border-green-600 px-2 py-1 focus:outline-none focus:ring-1 focus:ring-green-500 cursor-pointer hover:bg-green-750 transition-colors"
-                        value={preferences.language}
-                        onChange={(e) => updatePreference('language', e.target.value)}
-                    >
-                        <option value="mr">मराठी</option>
-                        <option value="en">English</option>
-                        <option value="hi">हिंदी</option>
-                    </select>
+                    <div className="relative">
+                        <select
+                            className="appearance-none bg-white/10 text-white text-xs md:text-sm rounded-lg border border-white/20 pl-2.5 pr-7 py-1.5 focus:outline-none focus:ring-1 focus:ring-white/30 cursor-pointer hover:bg-white/15 transition-colors"
+                            value={preferences.language}
+                            onChange={(e) => updatePreference('language', e.target.value)}
+                        >
+                            <option value="mr" className="text-gray-900">मराठी</option>
+                            <option value="en" className="text-gray-900">English</option>
+                            <option value="hi" className="text-gray-900">हिंदी</option>
+                        </select>
+                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/60 pointer-events-none" />
+                    </div>
 
                     {isAuthenticated ? (
-                        <div className="flex items-center space-x-3">
-                            <Link to="/profile" className="flex items-center text-sm font-medium hover:text-green-200 transition-colors cursor-pointer" title="तुमची प्रोफाईल (Profile)">
-                                <User className="w-5 h-5 sm:hidden mr-1" />
-                                <span className="hidden sm:inline-block">नमस्कार, {farmer?.name?.split(' ')[0]}</span>
+                        <div className="flex items-center space-x-2.5">
+                            <Link
+                                to="/profile"
+                                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium text-white hover:bg-white/10 transition-all"
+                                title={t('profile.title')}
+                            >
+                                <div className="w-7 h-7 bg-white/15 rounded-full flex items-center justify-center border border-white/20">
+                                    <User className="w-3.5 h-3.5" />
+                                </div>
+                                <span className="hidden sm:inline-block text-sm">
+                                    {farmer?.name?.split(' ')[0]}
+                                </span>
                             </Link>
                             <button
                                 onClick={handleLogout}
-                                className="flex items-center justify-center p-1.5 md:p-2 bg-green-800 hover:bg-red-600 rounded-full transition-colors"
-                                title="Logout"
+                                className="flex items-center justify-center w-8 h-8 bg-white/10 hover:bg-red-500/90 rounded-lg transition-all duration-200 border border-white/10 hover:border-red-400/50"
+                                title={t('header.logout')}
                             >
-                                <LogOut className="w-4 h-4 md:w-5 md:h-5 text-white" />
+                                <LogOut className="w-4 h-4 text-white" />
                             </button>
                         </div>
                     ) : (
                         <button
                             onClick={() => navigate('/login')}
-                            className="flex items-center px-3 py-1.5 md:px-4 md:py-2 bg-white text-green-700 rounded-md font-medium text-xs md:text-sm shadow-sm hover:bg-green-50 transition-colors"
+                            className="flex items-center gap-1.5 px-3.5 py-1.5 md:px-4 md:py-2 bg-white text-green-700 rounded-lg font-semibold text-xs md:text-sm shadow-sm hover:bg-green-50 hover:shadow-md transition-all active:scale-95"
                         >
-                            <User className="w-4 h-4 md:mr-1" />
-                            <span className="hidden md:inline-block">लॉगिन</span>
+                            <User className="w-4 h-4" />
+                            <span>{t('header.login')}</span>
                         </button>
                     )}
                 </div>

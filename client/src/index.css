@@ -1,12 +1,61 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
-body {
-    font-family: 'Noto Sans Devanagari', sans-serif;
+/* ── Base Typography ── */
+html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
 }
 
+body {
+    font-family: 'Noto Sans Devanagari', 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: #f8faf8;
+}
+
+/* English text uses Inter */
+h1, h2, h3, h4, h5, h6,
+.font-en {
+    font-family: 'Inter', 'Noto Sans Devanagari', system-ui, sans-serif;
+}
+
+/* ── Safe Area ── */
 .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ── Focus Styles ── */
+input:focus, select:focus, textarea:focus, button:focus-visible {
+    outline: none;
+    ring: 2px solid #16a34a;
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+}
+
+/* ── Premium Card ── */
+.card-premium {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+/* ── Gradient Text ── */
+.text-gradient {
+    background: linear-gradient(135deg, #15803d, #10b981);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ── Active Nav Dot ── */
+.nav-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #15803d;
+    transition: all 0.3s ease;
 }
 
 /* ── Scanner FAB Animations ── */
@@ -48,10 +97,16 @@ body {
     }
 }
 
-/* ── CropDoctor Page Animations ── */
-@keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
+/* ── Page Entrance Animations ── */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 @keyframes slideUp {
@@ -63,6 +118,24 @@ body {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+.animate-fadeInUp {
+    animation: fadeInUp 0.5s ease-out both;
+}
+
+/* Staggered children animation */
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 60ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 120ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 180ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 240ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 300ms; }
+
+/* ── CropDoctor Animations ── */
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
 }
 
 @keyframes pulseGlow {
@@ -92,4 +165,33 @@ body {
 
 .animate-pulseGlow {
     animation: pulseGlow 2s infinite;
+}
+
+/* ── Loading Spinner ── */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 2.5px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+/* ── Scrollbar Polish ── */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
 }

@@ -1,120 +1,89 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import API_BASE from '../config/api';
+import useTranslation from '../i18n/useTranslation';
+import { CloudRain } from 'lucide-react';
 
 const WeatherCard = () => {
+    const { t } = useTranslation();
     const [weather, setWeather] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [currentTime, setCurrentTime] = useState(new Date());
 
     useEffect(() => {
-        // Timer for live clock
         const timer = setInterval(() => setCurrentTime(new Date()), 60000);
-
         const fetchWeather = async (lat, lon) => {
             try {
-                // Determine API URL based on environment (Vite uses VITE_API_URL or hardcoded localhost for dev)
-                // Uses central API config for network accessibility
                 const response = await axios.get(`${API_BASE}/api/v1/weather?lat=${lat}&lon=${lon}`);
                 setWeather(response.data);
                 setLoading(false);
             } catch (err) {
                 console.error("Weather fetch failed:", err);
-                setError("हवामान माहिती उपलब्ध नाही");
+                setError(t('weather.loading'));
                 setLoading(false);
             }
         };
 
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    fetchWeather(position.coords.latitude, position.coords.longitude);
-                },
-                (err) => {
-                    console.error("Geolocation denied/error:", err);
-                    setError("लोकेशन चालू करा");
-                    setLoading(false);
-                }
+                (position) => fetchWeather(position.coords.latitude, position.coords.longitude),
+                () => { setError(t('weather.enableLocation')); setLoading(false); }
             );
         } else {
             setError("Browser not supported");
             setLoading(false);
         }
-
         return () => clearInterval(timer);
     }, []);
 
-    // Marathi Date Formatter
     const formatDateTime = (date) => {
         const options = { weekday: 'long', day: 'numeric', month: 'long' };
-        // Manual mapping for common Marathi time terms if standard API is insufficient
-        // but 'mr-IN' usually works well.
         const dateStr = date.toLocaleDateString('mr-IN', options);
         const timeStr = date.toLocaleTimeString('mr-IN', { hour: '2-digit', minute: '2-digit' });
         return `${dateStr} | ${timeStr}`;
     };
 
-    // Loading Skeleton (Hero Style)
     if (loading) {
         return (
-            <div className="bg-sky-200 w-full h-48 animate-pulse flex flex-col justify-center items-center text-sky-700">
-                <p>हवामान लोड होत आहे...</p>
+            <div className="bg-gradient-to-r from-sky-100 to-sky-200 w-full h-32 animate-pulse flex flex-col justify-center items-center text-sky-500 rounded-2xl">
+                <div className="spinner w-8 h-8 border-[3px] border-sky-200 border-t-sky-500" />
+                <p className="mt-2 text-sm font-medium">{t('weather.loading')}</p>
             </div>
         );
     }
 
-    // Error State
     if (error) {
         return (
-            <div className="bg-red-50 p-4 text-center text-red-600 font-bold border-b-2 border-red-200">
-                ⚠️ {error}
+            <div className="bg-red-50 p-4 text-center text-red-500 font-semibold rounded-2xl border border-red-100 flex items-center justify-center gap-2">
+                <CloudRain className="w-5 h-5" />
+                {error}
             </div>
         );
     }
 
-    // Success State - HERO STYLE
     if (weather) {
         return (
-            <div className="bg-gradient-to-r from-sky-300 to-sky-400 md:from-sky-400 md:to-sky-500 text-white 
-                w-full px-5 py-4 rounded-2xl shadow-lg md:shadow-md transition-all hover:shadow-lg">
-
-                {/* Date & Time */}
-                <p className="text-xs text-white/90 mb-1">
-                    {formatDateTime(currentTime)}
-                </p>
-
+            <div className="bg-gradient-to-br from-sky-400 via-sky-500 to-blue-600 text-white w-full px-5 py-4 rounded-2xl shadow-lg transition-all hover:shadow-xl">
+                <p className="text-xs text-white/70 mb-2 font-medium">{formatDateTime(currentTime)}</p>
                 <div className="flex justify-between items-center">
-
-                    {/* Left Info */}
                     <div>
-                        <p className="text-xl font-semibold">
-                            {weather.temp_min}°C / {weather.temp_max}°C
-                        </p>
-
-                        <p className="text-sm capitalize opacity-90">
-                            {weather.description}
-                        </p>
+                        <div className="flex items-center gap-1">
+                            <span className="text-3xl font-bold">{weather.temp_min}°</span>
+                            <span className="text-lg text-white/60 font-medium">/ {weather.temp_max}°</span>
+                        </div>
+                        <p className="text-sm capitalize text-white/80 mt-0.5">{weather.description}</p>
                     </div>
-
-                    {/* Right Icon */}
-                    <img
-                        src={`http://openweathermap.org/img/wn/${weather.icon}@2x.png`}
-                        alt="weather"
-                        className="w-14 h-14"
-                    />
+                    <img src={`http://openweathermap.org/img/wn/${weather.icon}@2x.png`} alt="weather" className="w-16 h-16 -mr-1" />
                 </div>
-
-                {/* Advisory (VERY SUBTLE) */}
                 {weather.advisory && (
-                    <p className="mt-2 text-xs bg-white/20 rounded-lg px-2 py-1">
+                    <div className="mt-3 bg-white/15 backdrop-blur-sm rounded-xl px-3 py-2 text-xs font-medium">
                         📢 {weather.advisory}
-                    </p>
+                    </div>
                 )}
             </div>
         );
     }
-
     return null;
 };
 
