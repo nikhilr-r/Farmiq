@@ -1,5 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
+import API_BASE from '../config/api';
 import UserContext from '../context/UserContext';
 
 // Removed Lucide imports to rely on standard emojis/CSS where possible for stability.
@@ -19,7 +20,7 @@ const Schemes = () => {
 
     const fetchSchemes = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/v1/schemes', {
+            const res = await axios.get(`${API_BASE}/api/v1/schemes`, {
                 params: { district: preferences.district }
             });
             setSchemes(res.data);

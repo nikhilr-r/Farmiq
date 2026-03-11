@@ -1,6 +1,7 @@
 import { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import API_BASE from '../config/api';
 import UserContext from '../context/UserContext';
 import { Leaf, Phone, Lock } from 'lucide-react';
 
@@ -26,7 +27,7 @@ const Login = () => {
         setLoading(true);
 
         try {
-            const res = await axios.post('http://localhost:5000/api/v1/farmer/auth/login', formData);
+            const res = await axios.post(`${API_BASE}/api/v1/farmer/auth/login`, formData);
 
             // On success, save token to context/storage and redirect to dashboard
             loginFarmer(res.data.token);

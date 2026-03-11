@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import API_BASE from '../config/api';
 
 const Calendar = () => {
     const [crops, setCrops] = useState([]);
@@ -13,7 +14,7 @@ const Calendar = () => {
     useEffect(() => {
         const fetchCrops = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/v1/crops');
+                const response = await axios.get(`${API_BASE}/api/v1/crops`);
                 setCrops(response.data);
                 if (response.data.length > 0) {
                     // Try to restore selection or pick first

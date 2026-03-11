@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import API_BASE from '../config/api';
 import { useNavigate } from 'react-router-dom';
 
 const AdminDashboard = () => {
@@ -15,7 +16,7 @@ const AdminDashboard = () => {
 
     const fetchUpdates = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/v1/admin/updates/pending', {
+            const res = await axios.get(`${API_BASE}/api/v1/admin/updates/pending`, {
                 headers: { 'x-auth-token': localStorage.getItem('admin_token') }
             });
             setUpdates(res.data);
@@ -26,7 +27,7 @@ const AdminDashboard = () => {
 
     const verifyUpdate = async (id) => {
         try {
-            await axios.put(`http://localhost:5000/api/v1/admin/updates/${id}/verify`, {}, {
+            await axios.put(`${API_BASE}/api/v1/admin/updates/${id}/verify`, {}, {
                 headers: { 'x-auth-token': localStorage.getItem('admin_token') }
             });
             setMsg('Update Verified and Published!');
@@ -39,7 +40,7 @@ const AdminDashboard = () => {
 
     const triggerFetch = async () => {
         try {
-            const res = await axios.post('http://localhost:5000/api/v1/admin/updates/fetch', {}, {
+            const res = await axios.post(`${API_BASE}/api/v1/admin/updates/fetch`, {}, {
                 headers: { 'x-auth-token': localStorage.getItem('admin_token') }
             });
             setMsg(res.data.msg);

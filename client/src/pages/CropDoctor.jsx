@@ -2,6 +2,7 @@ import { useState, useEffect, useContext, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import UserContext from '../context/UserContext';
 import axios from 'axios';
+import API_BASE from '../config/api';
 
 const CropDoctor = () => {
     const location = useLocation();
@@ -45,7 +46,7 @@ const CropDoctor = () => {
     const loadHistory = async () => {
         setHistoryLoading(true);
         try {
-            const res = await axios.get('http://localhost:5000/api/v1/diagnosis/history', {
+            const res = await axios.get(`${API_BASE}/api/v1/diagnosis/history`, {
                 headers: { 'x-auth-token': token }
             });
             setHistory(res.data);
@@ -64,7 +65,7 @@ const CropDoctor = () => {
         setResult(null);
 
         try {
-            const res = await axios.post('http://localhost:5000/api/v1/diagnosis/analyze', {
+            const res = await axios.post(`${API_BASE}/api/v1/diagnosis/analyze`, {
                 image: imageData,
                 cropName: selectedCrop
             }, {

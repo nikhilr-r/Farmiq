@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import API_BASE from '../config/api';
 
 const UserContext = createContext();
 
@@ -24,7 +25,7 @@ export const UserProvider = ({ children }) => {
         const loadUser = async () => {
             if (token) {
                 try {
-                    const res = await axios.get('http://localhost:5000/api/v1/farmer/auth/me', {
+                    const res = await axios.get(`${API_BASE}/api/v1/farmer/auth/me`, {
                         headers: { 'x-auth-token': token }
                     });
                     setFarmer(res.data);

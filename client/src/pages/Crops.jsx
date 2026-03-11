@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import API_BASE from '../config/api';
 
 const Crops = () => {
     const [crops, setCrops] = useState([]);
@@ -12,7 +13,7 @@ const Crops = () => {
 
     const fetchCrops = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/v1/crops');
+            const res = await axios.get(`${API_BASE}/api/v1/crops`);
             setCrops(res.data);
             setLoading(false);
         } catch (err) {

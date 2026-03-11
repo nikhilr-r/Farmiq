@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
+import API_BASE from '../config/api';
 import { useNavigate } from 'react-router-dom';
 
 const AdminLogin = () => {
@@ -10,7 +11,7 @@ const AdminLogin = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post('http://localhost:5000/api/v1/auth/login', formData);
+            const res = await axios.post(`${API_BASE}/api/v1/auth/login`, formData);
             localStorage.setItem('admin_token', res.data.token);
             navigate('/admin/dashboard');
         } catch (err) {

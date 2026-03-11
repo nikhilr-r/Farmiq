@@ -1,5 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
+import API_BASE from '../config/api';
 import UserContext from '../context/UserContext';
 import { MAHARASHTRA_DISTRICTS, DISTRICT_TALUKAS } from '../constants';
 
@@ -41,7 +42,7 @@ const Officers = () => {
     const fetchOfficers = async () => {
         setLoading(true);
         try {
-            const res = await axios.get('http://localhost:5000/api/v1/officers', {
+            const res = await axios.get(`${API_BASE}/api/v1/officers`, {
                 params: {
                     district: filters.district,
                     taluka: filters.taluka

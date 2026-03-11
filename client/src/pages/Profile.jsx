@@ -1,5 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
+import API_BASE from '../config/api';
 import { User, MapPin, Tractor, Sprout, AlertCircle, CheckCircle2, Leaf } from 'lucide-react';
 import UserContext from '../context/UserContext';
 
@@ -27,7 +28,7 @@ const Profile = () => {
     useEffect(() => {
         const fetchCrops = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/v1/crops');
+                const res = await axios.get(`${API_BASE}/api/v1/crops`);
                 setCropsList(res.data);
             } catch (err) {
                 console.error("Failed to fetch crops", err);
@@ -85,7 +86,7 @@ const Profile = () => {
         }
 
         try {
-            const res = await axios.put('http://localhost:5000/api/v1/farmer/auth/profile', updateData, {
+            const res = await axios.put(`${API_BASE}/api/v1/farmer/auth/profile`, updateData, {
                 headers: { 'x-auth-token': token }
             });
 

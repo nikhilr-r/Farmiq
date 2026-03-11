@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import API_BASE from '../config/api';
 import UserContext from '../context/UserContext';
 import { Leaf, User, Phone, MapPin, Map, Factory, Droplets } from 'lucide-react';
 
@@ -34,7 +35,7 @@ const Register = () => {
     useEffect(() => {
         const fetchCrops = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/v1/crops');
+                const res = await axios.get(`${API_BASE}/api/v1/crops`);
                 setAvailableCrops(res.data);
             } catch (err) {
                 console.error('Failed to load crops data');
@@ -75,7 +76,7 @@ const Register = () => {
                 landSize: Number(formData.landSize)
             };
 
-            const res = await axios.post('http://localhost:5000/api/v1/farmer/auth/register', payload);
+            const res = await axios.post(`${API_BASE}/api/v1/farmer/auth/register`, payload);
 
             // On success, save token and redirect
             loginFarmer(res.data.token);

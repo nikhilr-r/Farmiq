@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import API_BASE from '../config/api';
 
 const WeatherCard = () => {
     const [weather, setWeather] = useState(null);
@@ -14,8 +15,8 @@ const WeatherCard = () => {
         const fetchWeather = async (lat, lon) => {
             try {
                 // Determine API URL based on environment (Vite uses VITE_API_URL or hardcoded localhost for dev)
-                // Assuming proxy or localhost:5000 for now based on context
-                const response = await axios.get(`http://localhost:5000/api/v1/weather?lat=${lat}&lon=${lon}`);
+                // Uses central API config for network accessibility
+                const response = await axios.get(`${API_BASE}/api/v1/weather?lat=${lat}&lon=${lon}`);
                 setWeather(response.data);
                 setLoading(false);
             } catch (err) {
