@@ -1,6 +1,6 @@
 // Central API configuration
-// Uses relative path so Vite proxy handles routing in dev,
-// and works with any deployment URL in production.
-const API_BASE = 'http://localhost:5000';
+// Uses environment variable in production, fallback to localhost in dev
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export default API_BASE;
+
