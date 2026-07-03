@@ -1,0 +1,82 @@
+# AgriQ Disease Detection — Master Config
+# =========================================
+
+project:
+  name: "AgriQ-CropDisease"
+  version: "1.0.0"
+  seed: 42
+
+data:
+  raw_dir: "data/raw/plantvillage"
+  processed_dir: "data/processed"
+  img_size: 224
+  batch_size: 32
+  val_split: 0.15
+  test_split: 0.10
+  num_workers: 0          # MUST be 0 for Apple MPS stability
+
+  # Crops to EXCLUDE (non-Indian crops from PlantVillage)
+  exclude_crops:
+    - "Blueberry"
+    - "Cherry"
+    - "Peach"
+    - "Raspberry"
+    - "Strawberry"
+    - "Soybean"
+    - "Squash"
+
+training:
+  epochs: 60
+  early_stopping_patience: 12
+  grad_clip: 1.0
+  label_smoothing: 0.1
+  mixup_alpha: 0.2          # MixUp augmentation
+  cutmix_alpha: 1.0         # CutMix augmentation
+
+  # Differential learning rates
+  backbone_lr: 0.00003      # 10x lower than head
+  head_lr: 0.0003
+  weight_decay: 0.0001
+  
+  # Scheduler: Cosine Annealing Warm Restarts
+  scheduler_T0: 10
+  scheduler_T_mult: 2
+  eta_min: 0.000001
+
+  # Phase-based unfreezing (progressive fine-tuning)
+  freeze_backbone_epochs: 5   # warm up head only first
+
+models:
+  efficientnet:
+    backbone: "efficientnetv2_s"
+    dropout1: 0.3
+    dropout2: 0.2
+    hidden_dim: 512
+    
+  mobilenet:
+    backbone: "mobilenetv3_large_100"
+    dropout1: 0.25
+    dropout2: 0.15
+    hidden_dim: 256
+
+inference:
+  tta_augments: 8             # number of TTA passes
+  confidence_threshold: 0.75  # below this = "uncertain" flag
+  ensemble_weights:
+    efficientnet: 0.65
+    mobilenet: 0.35
+
+export:
+  save_dir: "exports/"
+  efficientnet_name: "agriQ_efficientnet_best.pth"
+  mobilenet_name: "agriQ_mobilenet_best.pth"
+
+wandb:
+  enabled: true
+  project: "agriQ-disease-detection"
+  entity: null              # set your wandb username here
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+  reload: false

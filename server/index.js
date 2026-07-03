@@ -9,7 +9,8 @@ const app = express();
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Database Connection
 connectDB();
@@ -23,6 +24,7 @@ app.use('/api/v1/crops', require('./routes/crops'));
 app.use('/api/v1/officers', require('./routes/officers'));
 app.use('/api/v1/updates', require('./routes/updates'));
 app.use('/api/v1/weather', require('./routes/weatherRoutes'));
+app.use('/api/v1/diagnosis', require('./routes/diagnosis'));
 
 app.use('/api/v1/auth', require('./routes/auth'));
 app.use('/api/v1/admin', require('./routes/admin'));

@@ -166,35 +166,65 @@ const CropDoctor = () => {
                                     </div>
                                     {result.diagnosis?.confidence && (
                                         <div className="mb-3">
-                                            <div className="flex justify-between text-xs text-gray-500 mb-1"><span>{t('doctor.confidence')}</span><span className="font-semibold">{Math.round(result.diagnosis.confidence * 100)}%</span></div>
-                                            <div className="h-2 bg-gray-100 rounded-full overflow-hidden"><div className="h-full bg-gradient-to-r from-green-400 to-emerald-500 rounded-full transition-all duration-1000" style={{ width: `${result.diagnosis.confidence * 100}%` }} /></div>
+                                            <div className="flex justify-between text-xs text-gray-500 mb-1"><span>{t('doctor.confidence')}</span><span className="font-semibold">{Math.round(result.diagnosis.confidence)}%</span></div>
+                                            <div className="h-2 bg-gray-100 rounded-full overflow-hidden"><div className="h-full bg-gradient-to-r from-green-400 to-emerald-500 rounded-full transition-all duration-1000" style={{ width: `${Math.min(result.diagnosis.confidence, 100)}%` }} /></div>
                                         </div>
                                     )}
-                                    <p className="text-sm text-gray-600 leading-relaxed">{result.diagnosis?.description || ''}</p>
+                                    <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">{result.diagnosis?.description || ''}</p>
+
+                                    {/* Removed topPredictions list to show only the main result */}
                                 </div>
                             </div>
 
                             {result.advisory && (
-                                <div className="animate-slideUp bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden" style={{ animationDelay: '0.15s' }}>
-                                    <div className="flex border-b border-gray-100 overflow-x-auto">
-                                        {[
-                                            { key: 'immediate', labelKey: 'advisory.immediate' },
-                                            { key: 'preventive', labelKey: 'advisory.preventive' },
-                                            { key: 'organic', labelKey: 'advisory.organic' },
-                                            { key: 'chemical', labelKey: 'advisory.chemical' },
-                                        ].map((tab) => (
-                                            <button key={tab.key} onClick={() => setActiveTab(tab.key)} className={`flex-1 min-w-fit px-4 py-3 text-xs font-semibold transition-colors whitespace-nowrap ${activeTab === tab.key ? 'text-green-700 border-b-2 border-green-600 bg-green-50/50' : 'text-gray-500 hover:text-gray-700'}`}>
-                                                {t(tab.labelKey)}
-                                            </button>
-                                        ))}
+                                <div className="animate-slideUp mt-6 space-y-4" style={{ animationDelay: '0.15s' }}>
+                                    <h3 className="text-lg font-bold text-gray-800 mb-2 px-1">{t('advisory.title') || 'Treatment & Advisory'}</h3>
+                                    
+                                    {/* Immediate Action */}
+                                    {result.advisory.immediate && (
+                                    <div className="bg-red-50 rounded-2xl p-4 border border-red-100 shadow-sm transition-all hover:shadow-md">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <span className="text-xl">🚨</span>
+                                            <h4 className="font-bold text-red-800">{t('advisory.immediate') || 'Immediate Action'}</h4>
+                                        </div>
+                                        <p className="text-sm text-red-700 leading-relaxed ml-7">{result.advisory.immediate}</p>
                                     </div>
-                                    <div className="p-5">
-                                        {result.advisory[activeTab] ? (
-                                            <ul className="space-y-2">{(Array.isArray(result.advisory[activeTab]) ? result.advisory[activeTab] : [result.advisory[activeTab]]).map((step, i) => (
-                                                <li key={i} className="flex items-start gap-2.5 text-sm text-gray-700"><span className="w-5 h-5 bg-green-100 text-green-700 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">{i + 1}</span><span className="leading-relaxed">{step}</span></li>
-                                            ))}</ul>
-                                        ) : <p className="text-sm text-gray-400 text-center py-4">{t('doctor.noDataAvailable')}</p>}
+                                    )}
+
+                                    {/* Treatment */}
+                                    {result.advisory.treatment && (
+                                    <div className="bg-blue-50 rounded-2xl p-4 border border-blue-200 shadow-sm transition-all hover:shadow-md">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <span className="text-xl">💊</span>
+                                            <h4 className="font-bold text-blue-900">{t('advisory.treatment') || 'Treatment'}</h4>
+                                        </div>
+                                        <div className="ml-7 bg-white/70 p-3.5 rounded-xl border border-blue-100 shadow-inner">
+                                            <p className="text-sm font-semibold text-blue-800 leading-relaxed whitespace-pre-wrap">{result.advisory.treatment}</p>
+                                        </div>
                                     </div>
+                                    )}
+
+                                    {/* Prevention */}
+                                    {result.advisory.prevention && (
+                                    <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100 shadow-sm transition-all hover:shadow-md">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <span className="text-xl">🛡️</span>
+                                            <h4 className="font-bold text-emerald-800">{t('advisory.prevention') || 'Prevention'}</h4>
+                                        </div>
+                                        <p className="text-sm text-emerald-700 leading-relaxed ml-7">{result.advisory.prevention}</p>
+                                    </div>
+                                    )}
+
+                                    {/* Yield Impact */}
+                                    {result.advisory.yieldImpact && (
+                                    <div className="bg-orange-50 rounded-2xl p-4 border border-orange-100 shadow-sm transition-all hover:shadow-md">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <span className="text-xl">📉</span>
+                                            <h4 className="font-bold text-orange-800">{t('advisory.yieldImpact') || 'Yield Impact If Untreated'}</h4>
+                                        </div>
+                                        <p className="text-sm font-semibold text-orange-700 leading-relaxed ml-7">{result.advisory.yieldImpact}</p>
+                                    </div>
+                                    )}
                                 </div>
                             )}
 

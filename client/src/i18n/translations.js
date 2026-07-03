@@ -191,10 +191,12 @@ const translations = {
     'doctor.noDataAvailable': { mr: 'या विभागासाठी माहिती उपलब्ध नाही', en: 'No data available for this section', hi: 'इस अनुभाग के लिए कोई डेटा उपलब्ध नहीं है' },
 
     // Advisory tabs
-    'advisory.immediate': { mr: '🚨 तात्काळ', en: '🚨 Immediate', hi: '🚨 तत्काल' },
-    'advisory.preventive': { mr: '🛡️ प्रतिबंध', en: '🛡️ Preventive', hi: '🛡️ निवारक' },
-    'advisory.organic': { mr: '🌿 सेंद्रिय', en: '🌿 Organic', hi: '🌿 जैविक' },
-    'advisory.chemical': { mr: '🧪 रासायनिक', en: '🧪 Chemical', hi: '🧪 रासायनिक' },
+    'advisory.title': { mr: 'उपचार व सल्ला', en: 'Treatment & Advisory', hi: 'उपचार व सलाह' },
+    'advisory.immediate': { mr: 'तात्काळ कारवाई', en: 'Immediate Action', hi: 'तत्काल कार्रवाई' },
+    'advisory.treatment': { mr: 'रासायनिक उपचार', en: 'Chemical Treatment', hi: 'रासायनिक उपचार' },
+    'advisory.prevention': { mr: 'प्रतिबंधात्मक उपाय', en: 'Preventive Measures', hi: 'निवारक उपाय' },
+    'advisory.organic': { mr: 'सेंद्रिय', en: 'Organic', hi: 'जैविक' },
+    'advisory.yieldImpact': { mr: 'उत्पन्नावर होणारा परिणाम', en: 'Yield Impact If Untreated', hi: 'उत्पादन पर प्रभाव' },
 
     // Weather context
     'weather.conditions': { mr: 'हवामान परिस्थिती', en: 'Weather Conditions', hi: 'मौसम की स्थिति' },
