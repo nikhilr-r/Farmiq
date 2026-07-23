@@ -97,6 +97,3 @@ node seeder.js
     - `controllers/`: Business logic for API endpoints
     - `cron/`: Auto-update logic and schedulers
     - `data/`: Mock data for seeding the database
-
-username : 8605270433 
-password : farmer1
